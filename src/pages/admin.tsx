@@ -3,7 +3,7 @@ import Navbar from "../componentes/NavAdmin";
 import DashboardTab from "../components/DashboardTab";
 import DataManagementTab from "../components/DataManagementTab";
 import BackupTab from "../components/BackupTab";
-import Graficas from "../components/Graficas";
+
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -154,9 +154,7 @@ const AdminDashboard: React.FC = () => {
             <BackupTab backupUrl={backupUrl} handleBackup={handleBackup} />
           )}
 
-          {activeTab === "graficas" && (
-            <Graficas usuarios={usuarios} adultos={adultos} />
-          )}
+         
         </div>
       </div>
     </div>
