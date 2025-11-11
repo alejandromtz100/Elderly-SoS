@@ -46,6 +46,11 @@ self.addEventListener("activate", (event) => {
 // 🔹 Fetch: Intercepta todas las solicitudes
 // -------------------------------
 self.addEventListener("fetch", (event) => {
+  // ⚠️ Ignora peticiones que no sean GET
+  if (event.request.method !== "GET") {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       // ✅ Si existe en caché, se devuelve directamente
@@ -56,7 +61,7 @@ self.addEventListener("fetch", (event) => {
       // 🔹 Intentar obtenerlo de la red
       return fetch(event.request)
         .then((networkResponse) => {
-          // Solo cacheamos respuestas exitosas (200)
+          // ✅ Solo cacheamos respuestas GET exitosas
           if (networkResponse && networkResponse.status === 200) {
             const clonedResponse = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
@@ -71,24 +76,6 @@ self.addEventListener("fetch", (event) => {
           // -------------------------------
           console.warn("📴 Sin conexión. No se pudo obtener:", event.request.url);
 
-          // Si es una llamada API o POST
-          if (
-            event.request.method === "POST" ||
-            event.request.url.includes("/api/")
-          ) {
-            // 🔹 Devuelve una respuesta válida (sin error 503)
-            return new Response(
-              JSON.stringify({
-                offline: true,
-                message: "Sin conexión, los datos se guardarán localmente.",
-              }),
-              {
-                headers: { "Content-Type": "application/json" },
-                status: 200, // ✅ evita error 503
-              }
-            );
-          }
-
           // Si es un recurso estático (por ejemplo una imagen o página)
           if (event.request.destination === "image") {
             return caches.match("/icon-192.png"); // fallback
@@ -96,7 +83,7 @@ self.addEventListener("fetch", (event) => {
 
           // 🔹 Respuesta genérica offline (sin error en consola)
           return new Response("Modo offline - recurso no disponible", {
-            status: 200, // ✅ no muestra error
+            status: 200, // ✅ evita error en consola
             headers: { "Content-Type": "text/plain" },
           });
         });
