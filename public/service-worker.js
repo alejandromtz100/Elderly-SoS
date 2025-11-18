@@ -98,8 +98,10 @@ self.addEventListener("push", (event) => {
   console.log("📬 Push recibido:", event.data?.text());
 
   let payload = {};
+
+  // Parse seguro del JSON
   try {
-    payload = event.data.json();
+    payload = event.data?.json() || {};
   } catch {
     payload = {
       title: "Notificación",
@@ -116,13 +118,10 @@ self.addEventListener("push", (event) => {
     badge: "/icon-192.png",
     vibrate: [200, 100, 200],
     data: {
-      url: payload.url || "/", // URL que se abrirá al hacer clic
+      url: payload.url || "/", // URL a abrir
     },
     actions: [
-      {
-        action: "open",
-        title: "Abrir",
-      },
+      { action: "open", title: "Abrir" },
     ],
   };
 
@@ -138,13 +137,14 @@ self.addEventListener("notificationclick", (event) => {
   const urlToOpen = event.notification.data?.url || "/";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
-      for (const client of clientsList) {
-        if (client.url.includes(urlToOpen) && "focus" in client) {
-          return client.focus();
+    clients.matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientsList) => {
+        for (const client of clientsList) {
+          if (client.url.includes(urlToOpen) && "focus" in client) {
+            return client.focus();
+          }
         }
-      }
-      return clients.openWindow(urlToOpen);
-    })
+        return clients.openWindow(urlToOpen);
+      })
   );
 });
