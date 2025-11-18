@@ -18,13 +18,14 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Clave VAPID pública (debe ser la misma que en la ruta del servidor)
-const publicVapidKey = "BGhTY0qmw7TjHShJlTZqLHe1kXDqdzYibbLbcPPFoViLaWLjQCWE8TyPIlZnBQGr4QlHuyxtELD3iuMmJ1iisHo";
+const publicVapidKey =
+  "BGhTY0qmw7TjHShJlTZqLHe1kXDqdzYibbLbcPPFoViLaWLjQCWE8TyPIlZnBQGr4QlHuyxtELD3iuMmJ1iisHo";
 
-// Función utilitaria para convertir base64url a Uint8Array
 const urlBase64ToUint8Array = (base64String: string) => {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+  const base64 = (base64String + padding)
+    .replace(/\-/g, "+")
+    .replace(/_/g, "/");
 
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
@@ -42,7 +43,7 @@ const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false); // Estado de suscripción
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscriptionStatusMsg, setSubscriptionStatusMsg] = useState<{
     msg: string;
     type: "success" | "error";
@@ -56,7 +57,6 @@ const Navbar: React.FC = () => {
       setUsuario(user);
     }
 
-    // Comprobar el estado de suscripción al cargar
     if ("serviceWorker" in navigator && "PushManager" in window) {
       navigator.serviceWorker.ready.then((registration) => {
         registration.pushManager.getSubscription().then((subscription) => {
@@ -95,7 +95,6 @@ const Navbar: React.FC = () => {
     setShowLogoutModal(false);
     setIsLoggingOut(true);
 
-    // Simular proceso de cierre de sesión
     setTimeout(() => {
       localStorage.removeItem("usuario");
       localStorage.removeItem("tempToken");
@@ -127,7 +126,6 @@ const Navbar: React.FC = () => {
     setMenuOpen(false);
   };
 
-  // 🔔 Función de Suscripción a Notificaciones
   const handleSubscribe = async () => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
       setSubscriptionStatusMsg({
@@ -138,16 +136,13 @@ const Navbar: React.FC = () => {
     }
 
     try {
-      // 1. Registrar el Service Worker (asumiendo que está en la raíz o ya registrado)
       const register = await navigator.serviceWorker.ready;
 
-      // 2. Suscribirse al PushManager
       const subscription = await register.pushManager.subscribe({
-        userVisibleOnly: true, // Notificación visible
+        userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
       });
 
-      // 3. Enviar la suscripción al servidor
       const res = await fetch(
         "https://api-elderly.onrender.com/api/notificaciones/suscribir",
         {
@@ -156,7 +151,7 @@ const Navbar: React.FC = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            usuario: usuario, // Tu nombre de usuario actual
+            usuario: usuario,
             subscription: subscription,
           }),
         }
@@ -170,26 +165,50 @@ const Navbar: React.FC = () => {
         });
       } else {
         const data = await res.json();
-        throw new Error(data.msg || "Error al guardar la suscripción en el servidor.");
+        throw new Error(
+          data.msg || "Error al guardar la suscripción en el servidor."
+        );
       }
     } catch (err) {
       console.error("Error al suscribirse:", err);
       setSubscriptionStatusMsg({
-        msg: `Error al suscribirse: ${err instanceof Error ? err.message : String(err)}`,
+        msg: `Error al suscribirse: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
         type: "error",
       });
     } finally {
       setTimeout(() => setSubscriptionStatusMsg(null), 5000);
-      setProfileMenuOpen(false); // Cierra el menú después de la acción
+      setProfileMenuOpen(false);
     }
   };
 
   const navItems = [
-    { name: "Home", id: "home", icon: <FaHome className="text-blue-500 text-lg" /> },
-    { name: "Nosotros", id: "nosotros", icon: <FaUsers className="text-blue-500 text-lg" /> },
-    { name: "Funciones", id: "funciones", icon: <FaCogs className="text-blue-500 text-lg" /> },
-    { name: "Descarga", id: "faq", icon: <FaDownload className="text-blue-500 text-lg" /> },
-    { name: "Contacto", id: "contacto", icon: <FaEnvelope className="text-blue-500 text-lg" /> },
+    {
+      name: "Home",
+      id: "home",
+      icon: <FaHome className="text-blue-500 text-lg" />,
+    },
+    {
+      name: "Nosotros",
+      id: "nosotros",
+      icon: <FaUsers className="text-blue-500 text-lg" />,
+    },
+    {
+      name: "Funciones",
+      id: "funciones",
+      icon: <FaCogs className="text-blue-500 text-lg" />,
+    },
+    {
+      name: "Descarga",
+      id: "faq",
+      icon: <FaDownload className="text-blue-500 text-lg" />,
+    },
+    {
+      name: "Contacto",
+      id: "contacto",
+      icon: <FaEnvelope className="text-blue-500 text-lg" />,
+    },
   ];
 
   return (
@@ -198,7 +217,7 @@ const Navbar: React.FC = () => {
         scrolled ? "" : ""
       }`}
     >
-      {/* Mensaje de estado de suscripción */}
+      {/* ALERTA SUSCRIPCIÓN */}
       <AnimatePresence>
         {subscriptionStatusMsg && (
           <motion.div
@@ -222,7 +241,7 @@ const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Overlay de carga al cerrar sesión */}
+      {/* ANIMACIÓN LOGOUT */}
       <AnimatePresence>
         {isLoggingOut && (
           <motion.div
@@ -236,7 +255,7 @@ const Navbar: React.FC = () => {
               initial={{ scale: 0.8, rotate: -180 }}
               animate={{
                 scale: 1,
-                rotate: 360, // Animación de rotación continua
+                rotate: 360,
                 transition: {
                   rotate: {
                     repeat: Infinity,
@@ -263,7 +282,7 @@ const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Modal de confirmación de cierre de sesión (igual que antes) */}
+      {/* MODAL LOGOUT */}
       <AnimatePresence>
         {showLogoutModal && (
           <motion.div
@@ -303,14 +322,14 @@ const Navbar: React.FC = () => {
                 <div className="flex justify-center space-x-4">
                   <button
                     type="button"
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                     onClick={cancelLogout}
                   >
                     Cancelar
                   </button>
                   <button
                     type="button"
-                    className="px-4 py-2 bg-red-600 rounded-lg text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                    className="px-4 py-2 bg-red-600 rounded-lg text-white hover:bg-red-700"
                     onClick={confirmLogout}
                   >
                     Cerrar sesión
@@ -322,14 +341,13 @@ const Navbar: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Resto del navbar */}
+      {/* NAVBAR */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
             <a
               href="/inicio"
-              className="text-3xl font-bold text-blue-600 hover:text-blue-700 transition-colors"
+              className="text-3xl font-bold text-blue-600 hover:text-blue-700"
               style={{ fontFamily: "Hotline, sans-serif" }}
               onClick={(e) => {
                 e.preventDefault();
@@ -340,7 +358,6 @@ const Navbar: React.FC = () => {
             </a>
           </div>
 
-          {/* Navegación central */}
           <div className="hidden md:flex items-center justify-center flex-1">
             <ul className="flex space-x-6">
               {navItems.map((item) => (
@@ -365,7 +382,9 @@ const Navbar: React.FC = () => {
             </ul>
           </div>
 
-          {/* Menú de usuario */}
+          {/* ------------------ */}
+          {/* PERFIL USUARIO */}
+          {/* ------------------ */}
           <div className="hidden md:flex items-center space-x-4 relative">
             {usuario ? (
               <div ref={dropdownRef} className="relative">
@@ -377,14 +396,14 @@ const Navbar: React.FC = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
                       {usuario.charAt(0).toUpperCase()}
                     </div>
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
                   </div>
-                  <span className="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                  <span className="font-medium text-gray-700 group-hover:text-blue-600">
                     {usuario}
                   </span>
                   <svg
                     className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${
-                      profileMenuOpen ? "transform rotate-180" : ""
+                      profileMenuOpen ? "rotate-180" : ""
                     }`}
                     fill="none"
                     viewBox="0 0 24 24"
@@ -401,8 +420,7 @@ const Navbar: React.FC = () => {
 
                 {profileMenuOpen && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-gray-100">
-                    {/* Header del menú */}
-                    <div className="px-5 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-100">
+                    <div className="px-5 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b">
                       <div className="flex items-center space-x-3">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-xl">
                           {usuario.charAt(0).toUpperCase()}
@@ -414,14 +432,13 @@ const Navbar: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Items del menú */}
                     <div className="py-2">
                       <Link
                         to="/recordatorios"
-                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50 transition-all duration-200 group"
+                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50"
                         onClick={() => setProfileMenuOpen(false)}
                       >
-                        <div className="p-2 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 group-hover:from-blue-200 group-hover:to-blue-300 mr-3 transition-colors shadow-sm">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-blue-100 to-blue-200 text-blue-600 mr-3 shadow-sm">
                           <FaBell className="w-5 h-5" />
                         </div>
                         <div>
@@ -432,13 +449,12 @@ const Navbar: React.FC = () => {
                         </div>
                       </Link>
 
-                      {/* 🔹 Nuevo ítem: Registrar Adulto */}
                       <Link
                         to="/registroadulto"
-                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50 transition-all duration-200 group"
+                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50"
                         onClick={() => setProfileMenuOpen(false)}
                       >
-                        <div className="p-2 rounded-lg bg-gradient-to-r from-green-100 to-green-200 text-green-600 group-hover:from-green-200 group-hover:to-green-300 mr-3 transition-colors shadow-sm">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-green-100 to-green-200 text-green-600 mr-3 shadow-sm">
                           <FaUserPlus className="w-5 h-5" />
                         </div>
                         <div>
@@ -451,10 +467,10 @@ const Navbar: React.FC = () => {
 
                       <Link
                         to="/Mapa"
-                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50 transition-all duration-200 group"
+                        className="flex items-center px-5 py-3 text-gray-700 hover:bg-blue-50"
                         onClick={() => setProfileMenuOpen(false)}
                       >
-                        <div className="p-2 rounded-lg bg-gradient-to-r from-purple-100 to-purple-200 text-purple-600 group-hover:from-purple-200 group-hover:to-purple-300 mr-3 transition-colors shadow-sm">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-purple-100 to-purple-200 text-purple-600 mr-3 shadow-sm">
                           <FaMapMarkerAlt className="w-5 h-5" />
                         </div>
                         <div>
@@ -465,21 +481,23 @@ const Navbar: React.FC = () => {
                         </div>
                       </Link>
 
-                      {/* 🔔 Nuevo Ítem: Suscribirse a Notificaciones */}
+                      {/* ----------------------------- */}
+                      {/* OPCIÓN DE SUSCRIBIRSE */}
+                      {/* ----------------------------- */}
                       <button
                         onClick={handleSubscribe}
                         disabled={isSubscribed}
-                        className={`w-full flex items-center px-5 py-3 text-left transition-all duration-200 group ${
+                        className={`w-full flex items-center px-5 py-3 text-left ${
                           isSubscribed
                             ? "text-gray-500 cursor-not-allowed"
                             : "text-blue-600 hover:bg-blue-50"
                         }`}
                       >
                         <div
-                          className={`p-2 rounded-lg mr-3 transition-colors shadow-sm ${
+                          className={`p-2 rounded-lg mr-3 shadow-sm ${
                             isSubscribed
                               ? "bg-gray-200 text-gray-500"
-                              : "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-600 group-hover:from-yellow-200 group-hover:to-yellow-300"
+                              : "bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-600"
                           }`}
                         >
                           <FaBell className="w-5 h-5" />
@@ -495,16 +513,13 @@ const Navbar: React.FC = () => {
                       </button>
                     </div>
 
-                    {/* Footer del menú */}
-                    <div className="border-t border-gray-100 px-5 py-3 bg-gray-50">
+                    <div className="border-t bg-gray-50 px-5 py-3">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center justify-center px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                        className="w-full flex items-center justify-center px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg"
                       >
-                        <div className="flex items-center">
-                          <FaPowerOff className="mr-2 text-xl text-red-600" />
-                          <span>Cerrar sesión</span>
-                        </div>
+                        <FaPowerOff className="mr-2 text-xl text-red-600" />
+                        <span>Cerrar sesión</span>
                       </button>
                     </div>
                   </div>
@@ -514,14 +529,14 @@ const Navbar: React.FC = () => {
               <>
                 <Link
                   to="/login"
-                  className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-all duration-200"
+                  className="flex items-center px-4 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium"
                 >
                   <FaSignInAlt className="mr-2 text-blue-500" />
                   Iniciar sesión
                 </Link>
                 <Link
                   to="/register"
-                  className="flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                  className="flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700 font-medium shadow-md"
                 >
                   <FaUserPlus className="mr-2" />
                   Registrarse
@@ -530,10 +545,9 @@ const Navbar: React.FC = () => {
             )}
           </div>
 
-          {/* Botón móvil */}
           <div className="md:hidden flex items-center">
             <button
-              className="text-blue-600 hover:text-blue-700 focus:outline-none transition-all duration-200 transform hover:rotate-90"
+              className="text-blue-600 hover:text-blue-700 focus:outline-none"
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Toggle menu"
             >
@@ -547,7 +561,9 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Menú móvil */}
+      {/* ------------------------------ */}
+      {/* MENÚ MÓVIL COMPLETO */}
+      {/* ------------------------------ */}
       {menuOpen && (
         <div className="md:hidden bg-white">
           <ul className="px-4 py-3 space-y-1">
@@ -555,105 +571,99 @@ const Navbar: React.FC = () => {
               <li key={item.id}>
                 <a
                   href={`#${item.id}`}
-                  className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-colors duration-200"
+                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg"
                   onClick={(e) => {
                     e.preventDefault();
                     handleScroll(item.id);
                   }}
                 >
-                  <span className="mr-3 text-blue-500">{item.icon}</span>
+                  <span className="mr-3">{item.icon}</span>
                   {item.name}
                 </a>
               </li>
             ))}
 
-            {usuario ? (
-              <>
-                <li>
-                  <Link
-                    to="/recordatorios"
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-colors duration-200"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <FaBell className="mr-3 text-blue-500" />
-                    Recordatorios
-                  </Link>
-                </li>
-
-                {/* 🔹 Registrar Adulto (versión móvil) */}
-                <li>
-                  <Link
-                    to="/registroadulto"
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-green-600 hover:bg-green-50 font-medium transition-colors duration-200"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <FaUserPlus className="mr-3 text-green-500" />
-                    Registrar Adulto
-                  </Link>
-                </li>
-
-                <li>
-                  <Link
-                    to="/visualizacion"
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-colors duration-200"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <FaMapMarkerAlt className="mr-3 text-blue-500" />
-                    Localizador
-                  </Link>
-                </li>
-
-                {/* 🔔 Suscribirse (versión móvil) */}
-                <li>
-                  <button
-                    onClick={handleSubscribe}
-                    disabled={isSubscribed}
-                    className={`flex items-center w-full px-4 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                      isSubscribed
-                        ? "text-gray-500 bg-gray-50 cursor-not-allowed"
-                        : "text-blue-600 hover:bg-blue-50"
-                    }`}
-                  >
-                    <FaBell
-                      className={`mr-3 ${
-                        isSubscribed ? "text-gray-500" : "text-yellow-500"
-                      }`}
-                    />
-                    {isSubscribed ? "Suscrito a Notificaciones" : "Suscribirse"}
-                  </button>
-                </li>
-
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 font-medium transition-colors duration-200"
-                  >
-                    <FaPowerOff className="mr-3" />
-                    Cerrar sesión
-                  </button>
-                </li>
-              </>
-            ) : (
+            {!usuario ? (
               <>
                 <li>
                   <Link
                     to="/login"
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 font-medium transition-colors duration-200"
                     onClick={() => setMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg"
                   >
-                    <FaSignInAlt className="mr-3 text-blue-500" />
+                    <FaSignInAlt className="mr-3 text-blue-600" />
                     Iniciar sesión
                   </Link>
                 </li>
                 <li>
                   <Link
                     to="/register"
-                    className="flex items-center px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
                     onClick={() => setMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-blue-600 bg-blue-100 rounded-lg"
                   >
                     <FaUserPlus className="mr-3" />
                     Registrarse
                   </Link>
+                </li>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link
+                    to="/recordatorios"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg"
+                  >
+                    <FaBell className="mr-3 text-blue-600" />
+                    Recordatorios
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/registroadulto"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg"
+                  >
+                    <FaUserPlus className="mr-3 text-green-600" />
+                    Registrar Adulto
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
+                    to="/Mapa"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg"
+                  >
+                    <FaMapMarkerAlt className="mr-3 text-purple-600" />
+                    Localizador
+                  </Link>
+                </li>
+
+                <li>
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={isSubscribed}
+                    className={`w-full flex items-center px-4 py-3 rounded-lg ${
+                      isSubscribed
+                        ? "text-gray-500 cursor-not-allowed"
+                        : "text-blue-600 hover:bg-blue-50"
+                    }`}
+                  >
+                    <FaBell className="mr-3" />
+                    {isSubscribed ? "Suscrito" : "Suscribirse"}
+                  </button>
+                </li>
+
+                <li>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg"
+                  >
+                    <FaPowerOff className="mr-3" />
+                    Cerrar sesión
+                  </button>
                 </li>
               </>
             )}
