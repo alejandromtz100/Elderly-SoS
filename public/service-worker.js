@@ -1,6 +1,6 @@
-const CACHE_NAME = "elderly-cache-v3";
+const CACHE_NAME = "elderly-cache-v4";
 
-// Lista de recursos esenciales a cachear
+// Recursos esenciales
 const urlsToCache = [
   "/",
   "/index.html",
@@ -10,7 +10,7 @@ const urlsToCache = [
 ];
 
 // --------------------------------------------------
-// 🔹 EVENTO: INSTALL → Cache inicial
+// INSTALL → Cache inicial
 // --------------------------------------------------
 self.addEventListener("install", (event) => {
   console.log("⚙️ Instalando Service Worker...");
@@ -18,7 +18,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(urlsToCache).catch((err) => {
-        console.warn("⚠️ Algunos archivos no se pudieron cachear:", err);
+        console.warn("⚠️ No se pudieron cachear algunos archivos:", err);
       });
     })
   );
@@ -27,7 +27,7 @@ self.addEventListener("install", (event) => {
 });
 
 // --------------------------------------------------
-// 🔹 EVENTO: ACTIVATE → Limpieza de caché vieja
+// ACTIVATE → Limpiar cachés viejas
 // --------------------------------------------------
 self.addEventListener("activate", (event) => {
   console.log("🚀 Activando nuevo Service Worker...");
@@ -37,7 +37,7 @@ self.addEventListener("activate", (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
-            console.log("🧹 Borrando caché antigua:", key);
+            console.log("🧹 Eliminando caché antigua:", key);
             return caches.delete(key);
           }
         })
@@ -49,7 +49,7 @@ self.addEventListener("activate", (event) => {
 });
 
 // --------------------------------------------------
-// 🔹 EVENTO: FETCH → Estrategia Cache-First
+// FETCH → Cache First
 // --------------------------------------------------
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
@@ -69,13 +69,11 @@ self.addEventListener("fetch", (event) => {
           return networkResponse;
         })
         .catch(() => {
-          console.warn("📴 Sin conexión:", event.request.url);
-
           if (event.request.destination === "image") {
             return caches.match("/icon-192.png");
           }
 
-          return new Response("Modo offline - recurso no disponible", {
+          return new Response("Offline - recurso no disponible", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
           });
@@ -85,56 +83,68 @@ self.addEventListener("fetch", (event) => {
 });
 
 // --------------------------------------------------
-// 🔹 EVENTO: MESSAGE → Control de actualización
+// MESSAGE → Forzar actualización
 // --------------------------------------------------
 self.addEventListener("message", (event) => {
-  if (event.data && event.data.type === "SKIP_WAITING") {
+  if (event.data?.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
 
 // --------------------------------------------------
-// 🔥🔥🔥
-// 🔹 EVENTO: PUSH → Mostrar notificaciones push
-// 🔥🔥🔥
+// PUSH → Mostrar notificaciones push
 // --------------------------------------------------
 self.addEventListener("push", (event) => {
-  console.log("📬 Notificación Push recibida:", event.data?.text());
+  console.log("📬 Push recibido:", event.data?.text());
 
-  let data = {};
+  let payload = {};
   try {
-    data = event.data.json();
-  } catch (err) {
-    data = {
+    payload = event.data.json();
+  } catch {
+    payload = {
       title: "Notificación",
-      body: event.data?.text() || "Tienes un nuevo mensaje",
+      body: event.data?.text() || "Tienes una nueva notificación",
     };
   }
 
+  const title = payload.title || "Notificación";
+  const body = payload.body || "Tienes un mensaje nuevo";
+
   const options = {
-    body: data.body,
+    body,
     icon: "/icon-192.png",
     badge: "/icon-192.png",
     vibrate: [200, 100, 200],
+    data: {
+      url: payload.url || "/", // URL que se abrirá al hacer clic
+    },
+    actions: [
+      {
+        action: "open",
+        title: "Abrir",
+      },
+    ],
   };
 
-  event.waitUntil(
-    self.registration.showNotification(data.title || "Notificación", options)
-  );
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 // --------------------------------------------------
-// 🔹 EVENTO: notificationclick (opcional)
+// notificationclick → Abrir la app o URL específica
 // --------------------------------------------------
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
+  const urlToOpen = event.notification.data?.url || "/";
+
   event.waitUntil(
-    clients.matchAll({ type: "window" }).then((clientList) => {
-      if (clientList.length > 0) {
-        return clientList[0].focus();
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if (client.url.includes(urlToOpen) && "focus" in client) {
+          return client.focus();
+        }
       }
-      return clients.openWindow("/");
+      return clients.openWindow(urlToOpen);
     })
   );
 });
