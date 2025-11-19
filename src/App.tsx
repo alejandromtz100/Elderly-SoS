@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 
 // Componentes de páginas
@@ -14,8 +14,6 @@ import Recordatorios from './usuario/Recordatorios';
 import Graficas from './usuario/graficas';
 import ErrorBoundary from './components/ErrorBoundary';
 import Mapa from './usuario/mapa';
-
-
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -40,7 +38,11 @@ const AppRoutes = () => {
         <Route path="/recordatorios" element={<Recordatorios />} />
         <Route path="/mapa" element={<Mapa />} />
 
-        
+        {/* 🔥 FIX para eliminar warning: manejo especial de /assets/ */}
+        <Route path="/assets/*" element={<Navigate to="/" replace />} />
+
+        {/* 🔥 Wildcard para rutas no reconocidas */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
   );
