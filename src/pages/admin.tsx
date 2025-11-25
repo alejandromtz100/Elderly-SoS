@@ -3,7 +3,7 @@ import Navbar from "../componentes/NavAdmin";
 import DashboardTab from "../components/DashboardTab";
 import DataManagementTab from "../components/DataManagementTab";
 import BackupTab from "../components/BackupTab";
-import NotificationManagementTab from "../components/NotificationManagementTab"; // Importar el nuevo componente
+// Importar el nuevo componente
 import { FaTachometerAlt, FaUsersCog, FaDatabase, FaChartBar, FaBell } from "react-icons/fa"; // Iconos actualizados
 
 const AdminDashboard: React.FC = () => {
@@ -168,9 +168,7 @@ const AdminDashboard: React.FC = () => {
             />
           )}
 
-          {activeTab === "notificaciones" && (
-            <NotificationManagementTab /> // Contenido de Notificaciones
-          )}
+          
 
           {activeTab === "backup" && (
             <BackupTab backupUrl={backupUrl} handleBackup={handleBackup} />

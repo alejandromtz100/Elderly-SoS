@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { FaBell, FaCheck, FaTimes, FaSpinner, FaPaperPlane } from "react-icons/fa";
 
-// Definición de tipos para las suscripciones
+
 interface SubscriptionUser {
   _id: string;
   usuario: string;
   correo: string;
   suscrito: boolean;
   puedeRecibir: boolean;
-  subscriptionToken: any; // El token de suscripción del navegador
+  subscriptionToken: any; 
 }
 
 const NotificationManagementTab: React.FC = () => {
@@ -18,7 +18,7 @@ const NotificationManagementTab: React.FC = () => {
   const [notification, setNotification] = useState({
     title: "",
     message: "",
-    targetUserId: "", // ID del usuario al que se enviará la notificación
+    targetUserId: "", 
   });
   const [isSending, setIsSending] = useState(false);
 
