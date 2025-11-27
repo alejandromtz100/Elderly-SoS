@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+// ⚠️ Asegúrate de que esta ruta sea correcta para tu archivo syncPendingAdults.ts
+import { syncPendingAdults } from './db/syncPendingAdults'; 
 
 // ---------------------------------------------
 // 🔹 Renderiza la aplicación principal
@@ -29,10 +31,12 @@ if ('serviceWorker' in navigator) {
 }
 
 // ---------------------------------------------
-// 🔹 Detección de estado de conexión
+// 🔹 Detección de estado de conexión y Sincronización
 // ---------------------------------------------
 window.addEventListener('online', () => {
-  console.log('🟢 Conexión restaurada');
+  console.log('🟢 Conexión restaurada. Intentando sincronizar datos pendientes...');
+  // 🚀 Llama a la función de sincronización cuando el usuario recupera internet
+  syncPendingAdults(); 
 });
 
 window.addEventListener('offline', () => {
