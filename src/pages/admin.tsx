@@ -3,8 +3,15 @@ import Navbar from "../componentes/NavAdmin";
 import DashboardTab from "../components/DashboardTab";
 import DataManagementTab from "../components/DataManagementTab";
 import BackupTab from "../components/BackupTab";
-// Importar el nuevo componente
-import { FaTachometerAlt, FaUsersCog, FaDatabase, FaChartBar, FaBell } from "react-icons/fa"; // Iconos actualizados
+import NotificationManagementTab from "../components/NotificationManagementTab";
+
+import {
+  FaTachometerAlt,
+  FaUsersCog,
+  FaDatabase,
+  FaChartBar,
+  FaBell,
+} from "react-icons/fa";
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -12,6 +19,7 @@ const AdminDashboard: React.FC = () => {
   const [usuarios, setUsuarios] = useState<any[]>([]);
   const [adultos, setAdultos] = useState<any[]>([]);
   const [backupUrl, setBackupUrl] = useState<string>("");
+
   const [loading, setLoading] = useState({
     dashboard: true,
     usuarios: true,
@@ -63,7 +71,7 @@ const AdminDashboard: React.FC = () => {
       });
   }, []);
 
-  // Función para generar respaldo
+  // Generar respaldo
   const handleBackup = () => {
     fetch("https://api-elderly.onrender.com/api/backup")
       .then((res) => res.blob())
@@ -79,10 +87,9 @@ const AdminDashboard: React.FC = () => {
       <Navbar />
 
       <div className="p-6 pt-24 max-w-7xl mx-auto">
-        {/* Pestañas de navegación */}
+        {/* Tabs */}
         <div className="mb-8">
           <div className="flex space-x-2 border-b border-gray-200">
-            {/* Panel de Control */}
             <button
               onClick={() => setActiveTab("dashboard")}
               className={`px-6 py-3 font-medium rounded-t-lg transition-all flex items-center ${
@@ -95,7 +102,6 @@ const AdminDashboard: React.FC = () => {
               Panel de Control
             </button>
 
-            {/* Gestión de Datos */}
             <button
               onClick={() => setActiveTab("crud")}
               className={`px-6 py-3 font-medium rounded-t-lg transition-all flex items-center ${
@@ -107,8 +113,7 @@ const AdminDashboard: React.FC = () => {
               <FaUsersCog className="mr-2" />
               Gestión de Datos
             </button>
-            
-            {/* Gestión de Notificaciones (NUEVA PESTAÑA) */}
+
             <button
               onClick={() => setActiveTab("notificaciones")}
               className={`px-6 py-3 font-medium rounded-t-lg transition-all flex items-center ${
@@ -121,7 +126,6 @@ const AdminDashboard: React.FC = () => {
               Notificaciones
             </button>
 
-            {/* Respaldos */}
             <button
               onClick={() => setActiveTab("backup")}
               className={`px-6 py-3 font-medium rounded-t-lg transition-all flex items-center ${
@@ -134,7 +138,6 @@ const AdminDashboard: React.FC = () => {
               Respaldos
             </button>
 
-            {/* Gráficas */}
             <button
               onClick={() => setActiveTab("graficas")}
               className={`px-6 py-3 font-medium rounded-t-lg transition-all flex items-center ${
@@ -149,7 +152,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Contenido de cada sección */}
+        {/* Contenido */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           {activeTab === "dashboard" && (
             <DashboardTab
@@ -168,7 +171,7 @@ const AdminDashboard: React.FC = () => {
             />
           )}
 
-          
+          {activeTab === "notificaciones" && <NotificationManagementTab />}
 
           {activeTab === "backup" && (
             <BackupTab backupUrl={backupUrl} handleBackup={handleBackup} />
