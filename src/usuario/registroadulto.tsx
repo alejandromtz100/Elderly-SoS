@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-// ❗ Importar 'Variants' de framer-motion para tipar correctamente los objetos de animación
+// ❗ Importamos Variants para corregir el error de tipado de framer-motion
 import { motion, AnimatePresence, Variants } from 'framer-motion'; 
 import Navbar from '../componentes/Navbar';
 import { saveAdultOffline } from '../db/offlineAdultsDB';
 import { syncPendingAdults } from '../db/syncPendingAdults';
 
+// Interfaz para los datos del formulario
 interface AdultoFormData {
   nombre: string;
   edad: number;
@@ -15,7 +16,7 @@ interface AdultoFormData {
 }
 
 // ----------------------------------------------------
-// 🔵 Componente Spinner
+// 🔵 Componente Spinner (Animación de carga)
 // ----------------------------------------------------
 const LoaderSpinner = () => (
   <motion.div
@@ -56,6 +57,7 @@ function RegistroAdulto() {
     setError(null);
     setIsSubmitting(true);
     setSavedOffline(false);
+    // Captura el estado de la conexión antes del envío
     setIsOnlineSubmission(navigator.onLine); 
 
     try {
@@ -94,8 +96,10 @@ function RegistroAdulto() {
             usuario: localStorage.getItem('usuario') || '',
           });
 
-          // Cerrar modal
-          setTimeout(() => setShowSuccess(false), 2000);
+          // Cerrar modal solo si fue un éxito inmediato (online)
+          if(navigator.onLine) {
+             setTimeout(() => setShowSuccess(false), 2000);
+          }
 
           // Intentar sincronizar si hay internet
           if (navigator.onLine) {
@@ -119,17 +123,42 @@ function RegistroAdulto() {
 
 
   // ----------------------------------------------------
-  // 🔵 Configuraciones de Animación (Ahora con tipado 'Variants')
+  // 🟢 Lógica para la Sincronización Exitosa (Offline a Online)
+  // ----------------------------------------------------
+  useEffect(() => {
+    // ❗ Función manejadora que muestra el éxito de la sincronización
+    const handleSyncSuccess = (_event: Event) => { 
+        console.log('Sincronización de adultos pendiente exitosa.');
+        
+        // Muestra el modal de éxito
+        setShowSuccess(true);
+        
+        // Cierra el modal después de 3 segundos
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
+
+    // Añadir el escuchador de eventos para cuando la conexión vuelva y sincronice
+    window.addEventListener('adultSyncSuccess', handleSyncSuccess);
+
+    // Limpieza: Remover el escuchador al desmontar el componente
+    return () => {
+      window.removeEventListener('adultSyncSuccess', handleSyncSuccess);
+    };
+  }, []); 
+
+
+  // ----------------------------------------------------
+  // 🔵 Configuraciones de Animación (Con tipado Variants)
   // ----------------------------------------------------
 
-  // 1. Animación para el mensaje de guardado Offline (Rebote desde arriba)
+  // 1. Animación para el mensaje de guardado Offline 
   const offlineMessageVariants: Variants = {
     hidden: { y: -50, opacity: 0 },
     visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 120, damping: 15 } },
     exit: { y: -50, opacity: 0 }
   };
 
-  // 2. Animación para el Modal de Éxito (Rebote suave)
+  // 2. Animación para el Modal de Éxito 
   const successModalVariants: Variants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: { scale: 1, opacity: 1, transition: { type: "spring", stiffness: 200, damping: 20 } },
